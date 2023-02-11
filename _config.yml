@@ -1,0 +1,14 @@
+title: "Atelier de Programmation"
+author: "Stéphane Calderoni (m1cr0lab)"
+organization: "Robotic 974"
+date: "2023-02-11T16:00:00+0400"
+description: "L'objectif de cet atelier est de programmer un petit automate chargé de simuler le lancé d'un dé à 6 faces et de révéler le numéro de la face tirée aléatoirement sur un afficheur binaire à 3 LEDs."
+keywords: "arduino,arduino-nano,arduino-uno,programmation,c,cpp,automate-fini,led,pwm"
+timezone: Indian/Reunion
+
+sass:
+  style: compressed
+  sourcemap: never
+
+plugins:
+  - jemoji
