@@ -28,9 +28,8 @@ class Led {
     public:
 
         void begin(uint8_t const pin) {
-            _pin        = pin;
             _brightness = 0;
-            pinMode(_pin, OUTPUT);
+            pinMode(_pin = pin, OUTPUT);
         }
 
         void light(uint8_t const brightness) {
