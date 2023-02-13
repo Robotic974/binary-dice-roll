@@ -12,8 +12,12 @@
 // -----------------------------------------------------------------------------
 
 uint8_t const BTN_PIN   = A2;
-uint8_t const LED_PIN[] = { 3, 10, 11 };
 uint8_t const LED_COUNT = 3;
+uint8_t const LED_PIN[] = { 3, 10, 11 };
+
+uint16_t const ROLLING_TIME      = 6000;
+uint8_t  const ROLLING_STEPS     = 4;
+uint8_t  const ROLLING_PATTERN[] = { 0, 1, 2, 1 };
 
 // -----------------------------------------------------------------------------
 // Interface de commande des LEDs
@@ -24,15 +28,18 @@ class Led {
     public:
 
         void begin(uint8_t const pin) {
-
+            _pin        = pin;
+            _brightness = 0;
         }
 
         void light(uint8_t const brightness) {
-
+            analogWrite(_pin, _brightness = brightness);
         }
 
         void fadeOut() {
-
+            if (_brightness) {
+                analogWrite(_pin, _brightness *= .9f);
+            }
         }
 
     private:
@@ -60,13 +67,55 @@ State state;
 
 void play() {
 
+    if (digitalRead(BTN_PIN)) state = State::ROLL;
+
 }
 
 void roll() {
 
+    static uint8_t  roll_index = 0;
+    static uint16_t roll_delay = 0; // temporisation courante
+    static uint16_t roll_wait  = 0; // temporisation cumulée
+    static uint32_t last_fade  = millis();
+    static uint32_t last_roll  = millis();
+
+    uint32_t const now = millis();
+
+    if (now - last_fade >= 10) {
+        last_fade = now;
+        for (uint8_t i = 0; i < LED_COUNT; ++i) {
+            led[i].fadeOut();
+        }
+    }
+
+    if (now - last_roll < roll_delay) return;
+    last_roll = now;
+
+    led[ROLLING_PATTERN[roll_index]].light(0xff);
+
+    roll_index++;
+    if (roll_index == ROLLING_STEPS) roll_index = 0;
+
+    roll_wait  += roll_delay;
+    if (roll_wait < ROLLING_TIME) {
+        roll_delay += 10;
+        return;
+    }
+
+    roll_wait = roll_delay = 0;
+    state = State::RANDOMIZE;
+
 }
 
 void randomize() {
+
+    uint8_t const r = 1 + random(6);
+
+    for (uint8_t i = 0; i < LED_COUNT; ++i) {
+        led[i].light((r >> i) & 0x1 ? 0xff : 0);
+    }
+
+    state = State::PLAY;
 
 }
 
@@ -75,6 +124,9 @@ void randomize() {
 // -----------------------------------------------------------------------------
 
 void setup() {
+
+    // randomise le générateur de nombres aléatoires
+    randomSeed(analogRead(A0));
 
     pinMode(BTN_PIN, INPUT);
 
